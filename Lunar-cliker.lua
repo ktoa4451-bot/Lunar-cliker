@@ -1,10 +1,11 @@
---// Lunar Clicker v1.1
---// Compact Auto Clicker
---// Visual reference: compact Lunar Clicker concept
+--==================================================
+-- LUNAR CLICKER v1.2
+-- PART 1/4
+-- Compact UI foundation
+--==================================================
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
 local TweenService = game:GetService("TweenService")
 
 local Player = Players.LocalPlayer
@@ -13,23 +14,32 @@ local Player = Players.LocalPlayer
 -- CONFIG
 --==================================================
 
-local CPS = 15
-local MouseButton = "Left"
-local Hotkey = Enum.KeyCode.K
+local Config = {
+    CPS = 15,
+    MouseButton = "Left",
+    Hotkey = Enum.KeyCode.K,
+    Running = false
+}
 
-local Running = false
-local Destroyed = false
+--==================================================
+-- COLORS
+--==================================================
 
-local PURPLE = Color3.fromRGB(105, 55, 225)
-local PURPLE_LIGHT = Color3.fromRGB(175, 125, 255)
-local DARK = Color3.fromRGB(12, 12, 22)
-local PANEL = Color3.fromRGB(17, 17, 31)
-local PANEL_2 = Color3.fromRGB(23, 22, 42)
-local TEXT = Color3.fromRGB(225, 220, 240)
-local SUBTEXT = Color3.fromRGB(145, 140, 170)
+local Colors = {
+    Background = Color3.fromRGB(12, 12, 20),
+    Surface = Color3.fromRGB(17, 17, 28),
+    Surface2 = Color3.fromRGB(22, 21, 36),
 
-local OPEN_SIZE = UDim2.fromOffset(610, 360)
-local CLOSED_SIZE = UDim2.fromOffset(0, 0)
+    Purple = Color3.fromRGB(108, 65, 220),
+    PurpleLight = Color3.fromRGB(165, 125, 255),
+
+    Text = Color3.fromRGB(235, 232, 245),
+    TextSecondary = Color3.fromRGB(145, 141, 165),
+
+    Border = Color3.fromRGB(48, 43, 72),
+
+    Green = Color3.fromRGB(90, 220, 125)
+}
 
 --==================================================
 -- GUI
@@ -38,17 +48,24 @@ local CLOSED_SIZE = UDim2.fromOffset(0, 0)
 local Gui = Instance.new("ScreenGui")
 Gui.Name = "LunarClicker"
 Gui.ResetOnSpawn = false
+Gui.IgnoreGuiInset = true
 Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 Gui.Parent = Player:WaitForChild("PlayerGui")
+
+--==================================================
+-- MAIN
+--==================================================
 
 local Main = Instance.new("Frame")
 Main.Name = "Main"
 Main.AnchorPoint = Vector2.new(0.5, 0.5)
-Main.Position = UDim2.new(0.5, 0, 0.5, 0)
-Main.Size = OPEN_SIZE
-Main.BackgroundColor3 = DARK
+Main.Position = UDim2.fromScale(0.5, 0.5)
+Main.Size = UDim2.fromOffset(570, 330)
+
+Main.BackgroundColor3 = Colors.Background
 Main.BorderSizePixel = 0
 Main.ClipsDescendants = true
+
 Main.Parent = Gui
 
 local MainCorner = Instance.new("UICorner")
@@ -56,543 +73,669 @@ MainCorner.CornerRadius = UDim.new(0, 14)
 MainCorner.Parent = Main
 
 local MainStroke = Instance.new("UIStroke")
-MainStroke.Color = Color3.fromRGB(78, 48, 150)
-MainStroke.Thickness = 1.5
-MainStroke.Transparency = 0.2
+MainStroke.Color = Colors.Border
+MainStroke.Thickness = 1
+MainStroke.Transparency = 0.15
 MainStroke.Parent = Main
 
 --==================================================
 -- TOP BAR
 --==================================================
 
-local Top = Instance.new("Frame")
-Top.Size = UDim2.new(1, 0, 0, 78)
-Top.BackgroundTransparency = 1
-Top.Parent = Main
+local TopBar = Instance.new("Frame")
+TopBar.Name = "TopBar"
+TopBar.Size = UDim2.new(1, 0, 0, 72)
+TopBar.BackgroundTransparency = 1
+TopBar.Parent = Main
 
-local Moon = Instance.new("TextLabel")
-Moon.Size = UDim2.fromOffset(58, 58)
-Moon.Position = UDim2.fromOffset(18, 9)
-Moon.BackgroundTransparency = 1
-Moon.Text = "☾"
-Moon.TextColor3 = PURPLE_LIGHT
-Moon.TextSize = 46
-Moon.Font = Enum.Font.GothamBold
-Moon.Parent = Top
+--==================================================
+-- MOON ICON
+-- no emoji / unicode
+--==================================================
+
+local MoonHolder = Instance.new("Frame")
+MoonHolder.Name = "Moon"
+MoonHolder.Size = UDim2.fromOffset(42, 42)
+MoonHolder.Position = UDim2.fromOffset(18, 15)
+MoonHolder.BackgroundTransparency = 1
+MoonHolder.Parent = TopBar
+
+local Moon = Instance.new("Frame")
+Moon.Size = UDim2.fromOffset(31, 31)
+Moon.Position = UDim2.fromOffset(4, 5)
+Moon.BackgroundColor3 = Colors.PurpleLight
+Moon.BorderSizePixel = 0
+Moon.Parent = MoonHolder
+
+local MoonCorner = Instance.new("UICorner")
+MoonCorner.CornerRadius = UDim.new(1, 0)
+MoonCorner.Parent = Moon
+
+-- cut-out to create crescent
+local MoonCut = Instance.new("Frame")
+MoonCut.Size = UDim2.fromOffset(25, 25)
+MoonCut.Position = UDim2.fromOffset(13, -4)
+MoonCut.BackgroundColor3 = Colors.Background
+MoonCut.BorderSizePixel = 0
+MoonCut.Parent = Moon
+
+local MoonCutCorner = Instance.new("UICorner")
+MoonCutCorner.CornerRadius = UDim.new(1, 0)
+MoonCutCorner.Parent = MoonCut
+
+--==================================================
+-- TITLE
+--==================================================
 
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.fromOffset(300, 30)
-Title.Position = UDim2.fromOffset(76, 13)
+Title.Name = "Title"
+Title.Size = UDim2.fromOffset(260, 27)
+Title.Position = UDim2.fromOffset(68, 12)
+
 Title.BackgroundTransparency = 1
 Title.Text = "Lunar Clicker"
-Title.TextColor3 = TEXT
-Title.TextSize = 23
+Title.TextColor3 = Colors.Text
+Title.TextSize = 21
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = Top
 
-local SubTitle = Instance.new("TextLabel")
-SubTitle.Size = UDim2.fromOffset(200, 22)
-SubTitle.Position = UDim2.fromOffset(78, 42)
-SubTitle.BackgroundTransparency = 1
-SubTitle.Text = "Auto Clicker"
-SubTitle.TextColor3 = SUBTEXT
-SubTitle.TextSize = 13
-SubTitle.Font = Enum.Font.Gotham
-SubTitle.TextXAlignment = Enum.TextXAlignment.Left
-SubTitle.Parent = Top
+Title.Parent = TopBar
+
+local Subtitle = Instance.new("TextLabel")
+Subtitle.Name = "Subtitle"
+Subtitle.Size = UDim2.fromOffset(220, 20)
+Subtitle.Position = UDim2.fromOffset(69, 38)
+
+Subtitle.BackgroundTransparency = 1
+Subtitle.Text = "Simple • Fast • Universal"
+Subtitle.TextColor3 = Colors.TextSecondary
+Subtitle.TextSize = 11
+Subtitle.Font = Enum.Font.Gotham
+Subtitle.TextXAlignment = Enum.TextXAlignment.Left
+
+Subtitle.Parent = TopBar
+
+--==================================================
+-- WINDOW BUTTONS
+--==================================================
 
 local Minimize = Instance.new("TextButton")
-Minimize.Size = UDim2.fromOffset(42, 42)
-Minimize.Position = UDim2.new(1, -92, 0, 17)
+Minimize.Name = "Minimize"
+Minimize.Size = UDim2.fromOffset(34, 34)
+Minimize.Position = UDim2.new(1, -76, 0, 19)
+
 Minimize.BackgroundTransparency = 1
-Minimize.Text = "—"
-Minimize.TextColor3 = Color3.fromRGB(185, 180, 210)
-Minimize.TextSize = 25
-Minimize.Font = Enum.Font.Gotham
-Minimize.Parent = Top
+Minimize.Text = ""
+Minimize.AutoButtonColor = false
+
+Minimize.Parent = TopBar
+
+-- line icon
+local Minus = Instance.new("Frame")
+Minus.Size = UDim2.fromOffset(13, 2)
+Minus.Position = UDim2.fromOffset(10, 16)
+Minus.BackgroundColor3 = Colors.TextSecondary
+Minus.BorderSizePixel = 0
+Minus.Parent = Minimize
+
+--==================================================
 
 local Close = Instance.new("TextButton")
-Close.Size = UDim2.fromOffset(42, 42)
-Close.Position = UDim2.new(1, -48, 0, 17)
+Close.Name = "Close"
+Close.Size = UDim2.fromOffset(34, 34)
+Close.Position = UDim2.new(1, -40, 0, 19)
+
 Close.BackgroundTransparency = 1
-Close.Text = "×"
-Close.TextColor3 = Color3.fromRGB(185, 180, 210)
-Close.TextSize = 27
-Close.Font = Enum.Font.Gotham
-Close.Parent = Top
+Close.Text = ""
+Close.AutoButtonColor = false
+
+Close.Parent = TopBar
+
+-- X icon
+local X1 = Instance.new("Frame")
+X1.Size = UDim2.fromOffset(14, 2)
+X1.Position = UDim2.fromOffset(10, 16)
+X1.Rotation = 45
+X1.BackgroundColor3 = Colors.TextSecondary
+X1.BorderSizePixel = 0
+X1.Parent = Close
+
+local X2 = Instance.new("Frame")
+X2.Size = UDim2.fromOffset(14, 2)
+X2.Position = UDim2.fromOffset(10, 16)
+X2.Rotation = -45
+X2.BackgroundColor3 = Colors.TextSecondary
+X2.BorderSizePixel = 0
+X2.Parent = Close
+
+--==================================================
+-- DIVIDER
+--==================================================
 
 local Divider = Instance.new("Frame")
-Divider.Size = UDim2.new(1, -2, 0, 1)
-Divider.Position = UDim2.fromOffset(1, 77)
-Divider.BackgroundColor3 = Color3.fromRGB(38, 36, 60)
+Divider.Name = "Divider"
+Divider.Size = UDim2.new(1, -36, 0, 1)
+Divider.Position = UDim2.fromOffset(18, 72)
+
+Divider.BackgroundColor3 = Colors.Border
+Divider.BackgroundTransparency = 0.35
 Divider.BorderSizePixel = 0
+
 Divider.Parent = Main
 
 --==================================================
--- HELPERS
+-- GENERAL PANEL CREATOR
 --==================================================
 
-local function Corner(object, radius)
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, radius)
-    c.Parent = object
-end
+local function CreatePanel(name, size, position)
 
-local function Panel(size, position)
-    local p = Instance.new("Frame")
-    p.Size = size
-    p.Position = position
-    p.BackgroundColor3 = PANEL
-    p.BorderSizePixel = 0
-    p.Parent = Main
+    local Panel = Instance.new("Frame")
+    Panel.Name = name
 
-    Corner(p, 12)
+    Panel.Size = size
+    Panel.Position = position
 
-    local s = Instance.new("UIStroke")
-    s.Color = Color3.fromRGB(48, 45, 78)
-    s.Thickness = 1
-    s.Transparency = 0.3
-    s.Parent = p
+    Panel.BackgroundColor3 = Colors.Surface
+    Panel.BorderSizePixel = 0
 
-    return p
-end
+    Panel.Parent = Main
 
-local function Label(parent, text, size, position)
-    local l = Instance.new("TextLabel")
-    l.Size = size
-    l.Position = position
-    l.BackgroundTransparency = 1
-    l.Text = text
-    l.TextColor3 = TEXT
-    l.TextSize = 15
-    l.Font = Enum.Font.Gotham
-    l.TextXAlignment = Enum.TextXAlignment.Left
-    l.Parent = parent
-    return l
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 11)
+    Corner.Parent = Panel
+
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Colors.Border
+    Stroke.Thickness = 1
+    Stroke.Transparency = 0.3
+    Stroke.Parent = Panel
+
+    return Panel
 end
 
 --==================================================
--- START BUTTON
+-- TEXT CREATOR
 --==================================================
 
-local StartButton = Instance.new("TextButton")
-StartButton.Size = UDim2.fromOffset(275, 60)
-StartButton.Position = UDim2.fromOffset(18, 90)
-StartButton.BackgroundColor3 = PURPLE
-StartButton.BorderSizePixel = 0
-StartButton.Text = "▶   Start"
-StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-StartButton.TextSize = 18
+local function CreateLabel(
+    parent,
+    name,
+    text,
+    size,
+    position,
+    textSize,
+    color
+)
+
+    local Label = Instance.new("TextLabel")
+
+    Label.Name = name
+    Label.Size = size
+    Label.Position = position
+
+    Label.BackgroundTransparency = 1
+    Label.Text = text
+
+    Label.TextColor3 = color or Colors.Text
+    Label.TextSize = textSize or 14
+
+    Label.Font = Enum.Font.Gotham
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    Label.Parent = parent
+
+    return Label
+end
+
+--==================================================
+-- BUTTON CREATOR
+--==================================================
+
+local function CreateButton(
+    parent,
+    name,
+    text,
+    size,
+    position
+)
+
+    local Button = Instance.new("TextButton")
+
+    Button.Name = name
+    Button.Size = size
+    Button.Position = position
+
+    Button.BackgroundColor3 = Colors.Surface2
+    Button.BorderSizePixel = 0
+
+    Button.Text = text
+    Button.TextColor3 = Colors.Text
+    Button.TextSize = 14
+    Button.Font = Enum.Font.GothamMedium
+
+    Button.AutoButtonColor = false
+
+    Button.Parent = parent
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.Parent = Button
+
+    return Button
+end
+
+--==================================================
+-- MAIN PANELS
+--==================================================
+
+local StartPanel = CreatePanel(
+    "StartPanel",
+    UDim2.fromOffset(260, 60),
+    UDim2.fromOffset(18, 91)
+)
+
+local StatusPanel = CreatePanel(
+    "StatusPanel",
+    UDim2.fromOffset(260, 60),
+    UDim2.fromOffset(292, 91)
+)
+
+local CPSPanel = CreatePanel(
+    "CPSPanel",
+    UDim2.fromOffset(260, 74),
+    UDim2.fromOffset(18, 165)
+)
+
+local MousePanel = CreatePanel(
+    "MousePanel",
+    UDim2.fromOffset(260, 74),
+    UDim2.fromOffset(292, 165)
+)
+
+local HotkeyPanel = CreatePanel(
+    "HotkeyPanel",
+    UDim2.fromOffset(260, 58),
+    UDim2.fromOffset(18, 253)
+)
+
+local TelegramPanel = CreatePanel(
+    "TelegramPanel",
+    UDim2.fromOffset(260, 58),
+    UDim2.fromOffset(292, 253)
+)
+
+print("Lunar Clicker v1.2 - Part 1 loaded")
+
+--==================================================
+-- LUNAR CLICKER v1.2
+-- PART 2/4
+-- Controls
+--==================================================
+
+--==================================================
+-- START / STOP
+--==================================================
+
+local StartButton = CreateButton(
+    StartPanel,
+    "StartButton",
+    "START",
+    UDim2.new(1, -24, 1, -18),
+    UDim2.fromOffset(12, 9)
+)
+
+StartButton.BackgroundColor3 = Colors.Purple
+StartButton.TextSize = 15
 StartButton.Font = Enum.Font.GothamBold
-StartButton.AutoButtonColor = false
-StartButton.Parent = Main
 
-Corner(StartButton, 12)
+-- маленький индикатор слева
+local StartIndicator = Instance.new("Frame")
+StartIndicator.Size = UDim2.fromOffset(7, 7)
+StartIndicator.Position = UDim2.fromOffset(22, 26)
+StartIndicator.BackgroundColor3 = Color3.fromRGB(255,255,255)
+StartIndicator.BorderSizePixel = 0
+StartIndicator.Parent = StartButton
+
+local StartIndicatorCorner = Instance.new("UICorner")
+StartIndicatorCorner.CornerRadius = UDim.new(1, 0)
+StartIndicatorCorner.Parent = StartIndicator
 
 --==================================================
 -- STATUS
 --==================================================
 
-local StatusPanel = Panel(
-    UDim2.fromOffset(275, 60),
-    UDim2.fromOffset(310, 90)
+CreateLabel(
+    StatusPanel,
+    "StatusTitle",
+    "STATUS",
+    UDim2.fromOffset(100, 20),
+    UDim2.fromOffset(18, 9),
+    10,
+    Colors.TextSecondary
 )
 
+local StatusValue = CreateLabel(
+    StatusPanel,
+    "StatusValue",
+    "Stopped",
+    UDim2.fromOffset(150, 25),
+    UDim2.fromOffset(18, 27),
+    15,
+    Colors.Text
+)
+
+-- status dot
 local StatusDot = Instance.new("Frame")
-StatusDot.Size = UDim2.fromOffset(12, 12)
-StatusDot.Position = UDim2.fromOffset(20, 24)
-StatusDot.BackgroundColor3 = Color3.fromRGB(80, 225, 110)
+StatusDot.Size = UDim2.fromOffset(9, 9)
+StatusDot.Position = UDim2.new(1, -30, 0, 25)
+StatusDot.BackgroundColor3 = Colors.Green
 StatusDot.BorderSizePixel = 0
 StatusDot.Parent = StatusPanel
 
-Corner(StatusDot, 50)
-
-local Status = Label(
-    StatusPanel,
-    "Stopped",
-    UDim2.fromOffset(200, 30),
-    UDim2.fromOffset(42, 15)
-)
-
-Status.TextSize = 16
+local StatusDotCorner = Instance.new("UICorner")
+StatusDotCorner.CornerRadius = UDim.new(1, 0)
+StatusDotCorner.Parent = StatusDot
 
 --==================================================
 -- CPS
 --==================================================
 
-local CPSPanel = Panel(
-    UDim2.fromOffset(275, 82),
-    UDim2.fromOffset(18, 164)
-)
-
-local CPSIcon = Label(
+CreateLabel(
     CPSPanel,
-    "⌁",
-    UDim2.fromOffset(30, 35),
-    UDim2.fromOffset(15, 9)
-)
-
-CPSIcon.TextColor3 = PURPLE_LIGHT
-CPSIcon.TextSize = 27
-
-Label(
-    CPSPanel,
+    "CPSTitle",
     "CPS",
-    UDim2.fromOffset(80, 28),
-    UDim2.fromOffset(48, 11)
+    UDim2.fromOffset(100, 20),
+    UDim2.fromOffset(18, 9),
+    10,
+    Colors.TextSecondary
 )
 
-local CPSBox = Instance.new("TextBox")
-CPSBox.Size = UDim2.fromOffset(105, 42)
-CPSBox.Position = UDim2.fromOffset(145, 20)
-CPSBox.BackgroundColor3 = PANEL_2
-CPSBox.BorderSizePixel = 0
-CPSBox.Text = tostring(CPS)
-CPSBox.TextColor3 = TEXT
-CPSBox.TextSize = 17
-CPSBox.Font = Enum.Font.GothamMedium
-CPSBox.ClearTextOnFocus = false
-CPSBox.Parent = CPSPanel
+local CPSValue = Instance.new("TextBox")
+CPSValue.Name = "CPSValue"
 
-Corner(CPSBox, 9)
+CPSValue.Size = UDim2.fromOffset(92, 38)
+CPSValue.Position = UDim2.new(1, -110, 0, 18)
+
+CPSValue.BackgroundColor3 = Colors.Surface2
+CPSValue.BorderSizePixel = 0
+
+CPSValue.Text = tostring(Config.CPS)
+CPSValue.TextColor3 = Colors.Text
+CPSValue.TextSize = 16
+CPSValue.Font = Enum.Font.GothamMedium
+
+CPSValue.ClearTextOnFocus = false
+CPSValue.TextXAlignment = Enum.TextXAlignment.Center
+
+CPSValue.Parent = CPSPanel
+
+local CPSCorner = Instance.new("UICorner")
+CPSCorner.CornerRadius = UDim.new(0, 8)
+CPSCorner.Parent = CPSValue
 
 local CPSStroke = Instance.new("UIStroke")
-CPSStroke.Color = Color3.fromRGB(55, 50, 90)
-CPSStroke.Parent = CPSBox
+CPSStroke.Color = Colors.Border
+CPSStroke.Thickness = 1
+CPSStroke.Transparency = 0.2
+CPSStroke.Parent = CPSValue
 
-CPSBox.FocusLost:Connect(function()
-    local number = tonumber(CPSBox.Text)
+CPSValue.FocusLost:Connect(function()
 
-    if number then
-        CPS = math.clamp(math.floor(number), 1, 1000)
-        CPSBox.Text = tostring(CPS)
+    local Value = tonumber(CPSValue.Text)
+
+    if Value then
+
+        Value = math.floor(Value)
+        Value = math.clamp(Value, 1, 1000)
+
+        Config.CPS = Value
+        CPSValue.Text = tostring(Value)
+
     else
-        CPSBox.Text = tostring(CPS)
+
+        CPSValue.Text = tostring(Config.CPS)
+
     end
+
 end)
 
 --==================================================
 -- MOUSE BUTTON
 --==================================================
 
-local MousePanel = Panel(
-    UDim2.fromOffset(275, 82),
-    UDim2.fromOffset(310, 164)
-)
-
-local MouseIcon = Label(
+CreateLabel(
     MousePanel,
-    "🖱",
-    UDim2.fromOffset(30, 30),
-    UDim2.fromOffset(15, 10)
+    "MouseTitle",
+    "MOUSE BUTTON",
+    UDim2.fromOffset(130, 20),
+    UDim2.fromOffset(18, 9),
+    10,
+    Colors.TextSecondary
 )
 
-MouseIcon.TextSize = 19
-
-Label(
+local LeftButton = CreateButton(
     MousePanel,
-    "Mouse Button",
-    UDim2.fromOffset(150, 28),
-    UDim2.fromOffset(48, 11)
+    "LeftButton",
+    "LEFT",
+    UDim2.fromOffset(108, 34),
+    UDim2.fromOffset(18, 31)
 )
 
-local Left = Instance.new("TextButton")
-Left.Size = UDim2.fromOffset(105, 34)
-Left.Position = UDim2.fromOffset(15, 43)
-Left.BackgroundColor3 = PURPLE
-Left.BorderSizePixel = 0
-Left.Text = "Left"
-Left.TextColor3 = Color3.fromRGB(255, 255, 255)
-Left.TextSize = 14
-Left.Font = Enum.Font.GothamMedium
-Left.AutoButtonColor = false
-Left.Parent = MousePanel
+local RightButton = CreateButton(
+    MousePanel,
+    "RightButton",
+    "RIGHT",
+    UDim2.fromOffset(108, 34),
+    UDim2.fromOffset(134, 31)
+)
 
-Corner(Left, 8)
+LeftButton.BackgroundColor3 = Colors.Purple
+RightButton.BackgroundColor3 = Colors.Surface2
 
-local Right = Instance.new("TextButton")
-Right.Size = UDim2.fromOffset(105, 34)
-Right.Position = UDim2.fromOffset(130, 43)
-Right.BackgroundColor3 = PANEL_2
-Right.BorderSizePixel = 0
-Right.Text = "Right"
-Right.TextColor3 = SUBTEXT
-Right.TextSize = 14
-Right.Font = Enum.Font.GothamMedium
-Right.AutoButtonColor = false
-Right.Parent = MousePanel
+local function SelectMouseButton(Button)
 
-Corner(Right, 8)
+    Config.MouseButton = Button
 
-Left.MouseButton1Click:Connect(function()
-    MouseButton = "Left"
+    if Button == "Left" then
 
-    TweenService:Create(
-        Left,
-        TweenInfo.new(0.15),
-        {BackgroundColor3 = PURPLE}
-    ):Play()
+        TweenService:Create(
+            LeftButton,
+            TweenInfo.new(0.15),
+            {
+                BackgroundColor3 = Colors.Purple
+            }
+        ):Play()
 
-    TweenService:Create(
-        Right,
-        TweenInfo.new(0.15),
-        {BackgroundColor3 = PANEL_2}
-    ):Play()
+        TweenService:Create(
+            RightButton,
+            TweenInfo.new(0.15),
+            {
+                BackgroundColor3 = Colors.Surface2
+            }
+        ):Play()
 
-    Left.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Right.TextColor3 = SUBTEXT
+    else
+
+        TweenService:Create(
+            RightButton,
+            TweenInfo.new(0.15),
+            {
+                BackgroundColor3 = Colors.Purple
+            }
+        ):Play()
+
+        TweenService:Create(
+            LeftButton,
+            TweenInfo.new(0.15),
+            {
+                BackgroundColor3 = Colors.Surface2
+            }
+        ):Play()
+
+    end
+
+end
+
+LeftButton.MouseButton1Click:Connect(function()
+    SelectMouseButton("Left")
 end)
 
-Right.MouseButton1Click:Connect(function()
-    MouseButton = "Right"
-
-    TweenService:Create(
-        Right,
-        TweenInfo.new(0.15),
-        {BackgroundColor3 = PURPLE}
-    ):Play()
-
-    TweenService:Create(
-        Left,
-        TweenInfo.new(0.15),
-        {BackgroundColor3 = PANEL_2}
-    ):Play()
-
-    Right.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Left.TextColor3 = SUBTEXT
+RightButton.MouseButton1Click:Connect(function()
+    SelectMouseButton("Right")
 end)
 
 --==================================================
 -- HOTKEY
 --==================================================
 
-local HotkeyPanel = Panel(
-    UDim2.fromOffset(275, 72),
-    UDim2.fromOffset(18, 258)
-)
-
-local KeyIcon = Label(
+CreateLabel(
     HotkeyPanel,
-    "⌨",
-    UDim2.fromOffset(30, 30),
-    UDim2.fromOffset(15, 7)
+    "HotkeyTitle",
+    "HOTKEY",
+    UDim2.fromOffset(90, 20),
+    UDim2.fromOffset(18, 7),
+    10,
+    Colors.TextSecondary
 )
 
-KeyIcon.TextColor3 = PURPLE_LIGHT
-KeyIcon.TextSize = 21
-
-Label(
+local HotkeyButton = CreateButton(
     HotkeyPanel,
-    "Hotkey",
-    UDim2.fromOffset(90, 28),
-    UDim2.fromOffset(48, 10)
+    "HotkeyButton",
+    Config.Hotkey.Name,
+    UDim2.fromOffset(145, 34),
+    UDim2.new(1, -163, 0, 12)
 )
 
-local HotkeyButton = Instance.new("TextButton")
-HotkeyButton.Size = UDim2.fromOffset(175, 35)
-HotkeyButton.Position = UDim2.fromOffset(85, 19)
-HotkeyButton.BackgroundColor3 = PANEL_2
-HotkeyButton.BorderSizePixel = 0
-HotkeyButton.Text = "K"
-HotkeyButton.TextColor3 = TEXT
-HotkeyButton.TextSize = 15
-HotkeyButton.Font = Enum.Font.GothamMedium
-HotkeyButton.Parent = HotkeyPanel
+HotkeyButton.TextSize = 14
 
-Corner(HotkeyButton, 8)
+local WaitingForHotkey = false
+
+HotkeyButton.MouseButton1Click:Connect(function()
+
+    if WaitingForHotkey then
+        return
+    end
+
+    WaitingForHotkey = true
+
+    HotkeyButton.Text = "PRESS KEY"
+    HotkeyButton.TextColor3 = Colors.PurpleLight
+
+end)
 
 --==================================================
 -- TELEGRAM
 --==================================================
 
-local Telegram = Instance.new("TextButton")
-Telegram.Size = UDim2.fromOffset(275, 72)
-Telegram.Position = UDim2.fromOffset(310, 258)
-Telegram.BackgroundColor3 = PANEL
-Telegram.BorderSizePixel = 0
-Telegram.Text = "✈   Telegram                         ›"
-Telegram.TextColor3 = Color3.fromRGB(200, 195, 225)
-Telegram.TextSize = 15
-Telegram.Font = Enum.Font.GothamMedium
-Telegram.TextXAlignment = Enum.TextXAlignment.Left
-Telegram.AutoButtonColor = false
-Telegram.Parent = Main
+local TelegramButton = CreateButton(
+    TelegramPanel,
+    "TelegramButton",
+    "TELEGRAM",
+    UDim2.new(1, -24, 1, -18),
+    UDim2.fromOffset(12, 9)
+)
 
-Corner(Telegram, 12)
-
-local TelegramPadding = Instance.new("UIPadding")
-TelegramPadding.PaddingLeft = UDim.new(0, 18)
-TelegramPadding.Parent = Telegram
-
-Telegram.MouseButton1Click:Connect(function()
-    if setclipboard then
-        setclipboard("https://t.me/lunarhub_script")
-    end
-end)
+TelegramButton.TextSize = 14
 
 --==================================================
--- AUTO CLICK
+-- HOVER EFFECTS
 --==================================================
 
-local function DoClick()
-    if MouseButton == "Left" then
+local function AddHover(Button, NormalColor, HoverColor)
 
-        VirtualInputManager:SendMouseButtonEvent(
-            0,
-            0,
-            0,
-            true,
-            game,
-            0
-        )
+    Button.MouseEnter:Connect(function()
 
-        VirtualInputManager:SendMouseButtonEvent(
-            0,
-            0,
-            0,
-            false,
-            game,
-            0
-        )
+        if Button ~= LeftButton
+        and Button ~= RightButton
+        and Button ~= StartButton then
 
-    else
-
-        VirtualInputManager:SendMouseButtonEvent(
-            0,
-            0,
-            1,
-            true,
-            game,
-            0
-        )
-
-        VirtualInputManager:SendMouseButtonEvent(
-            0,
-            0,
-            1,
-            false,
-            game,
-            0
-        )
-
-    end
-end
-
-local function StartClicker()
-
-    if Running then
-        return
-    end
-
-    Running = true
-
-    StartButton.Text = "■   Stop"
-    Status.Text = "Running"
-
-    StatusDot.BackgroundColor3 =
-        Color3.fromRGB(80, 225, 110)
-
-    TweenService:Create(
-        StartButton,
-        TweenInfo.new(0.15),
-        {
-            BackgroundColor3 =
-                Color3.fromRGB(75, 40, 160)
-        }
-    ):Play()
-
-    task.spawn(function()
-
-        while Running and not Destroyed do
-
-            DoClick()
-
-            task.wait(
-                1 / math.max(CPS, 1)
-            )
+            TweenService:Create(
+                Button,
+                TweenInfo.new(0.12),
+                {
+                    BackgroundColor3 = HoverColor
+                }
+            ):Play()
 
         end
 
     end)
+
+    Button.MouseLeave:Connect(function()
+
+        if Button ~= LeftButton
+        and Button ~= RightButton
+        and Button ~= StartButton then
+
+            TweenService:Create(
+                Button,
+                TweenInfo.new(0.12),
+                {
+                    BackgroundColor3 = NormalColor
+                }
+            ):Play()
+
+        end
+
+    end)
+
 end
 
-local function StopClicker()
+AddHover(
+    TelegramButton,
+    Colors.Surface2,
+    Color3.fromRGB(30, 28, 48)
+)
 
-    Running = false
+AddHover(
+    HotkeyButton,
+    Colors.Surface2,
+    Color3.fromRGB(30, 28, 48)
+)
 
-    StartButton.Text = "▶   Start"
-    Status.Text = "Stopped"
-
-    StatusDot.BackgroundColor3 =
-        Color3.fromRGB(80, 225, 110)
-
-    TweenService:Create(
-        StartButton,
-        TweenInfo.new(0.15),
-        {
-            BackgroundColor3 = PURPLE
-        }
-    ):Play()
-end
-
-StartButton.MouseButton1Click:Connect(function()
-
-    if Running then
-        StopClicker()
-    else
-        StartClicker()
-    end
-
-end)
+print("Lunar Clicker v1.2 - Part 2 loaded")
 
 --==================================================
--- HOTKEY CHANGE
+-- LUNAR CLICKER v1.2
+-- PART 3/4
+-- Core / Hotkey / Start-Stop
 --==================================================
 
-local WaitingForKey = false
-
-HotkeyButton.MouseButton1Click:Connect(function()
-
-    if WaitingForKey then
-        return
-    end
-
-    WaitingForKey = true
-    HotkeyButton.Text = "Press key..."
-
-end)
+--==================================================
+-- HOTKEY INPUT
+--==================================================
 
 UserInputService.InputBegan:Connect(function(input, processed)
 
-    if Destroyed then
+    if not input then
         return
     end
 
-    if WaitingForKey then
+    -- назначение новой клавиши
+    if WaitingForHotkey then
 
-        if input.UserInputType ==
-            Enum.UserInputType.Keyboard then
+        if input.UserInputType == Enum.UserInputType.Keyboard then
 
-            Hotkey = input.KeyCode
+            Config.Hotkey = input.KeyCode
+
             HotkeyButton.Text = input.KeyCode.Name
-            WaitingForKey = false
+            HotkeyButton.TextColor3 = Colors.Text
 
-            return
+            WaitingForHotkey = false
         end
 
+        return
     end
 
     if processed then
         return
     end
 
-    if input.UserInputType ==
-        Enum.UserInputType.Keyboard then
+    if input.UserInputType == Enum.UserInputType.Keyboard then
 
-        if input.KeyCode == Hotkey then
+        if input.KeyCode == Config.Hotkey then
 
-            if Running then
+            if Config.Running then
                 StopClicker()
             else
                 StartClicker()
@@ -605,17 +748,285 @@ UserInputService.InputBegan:Connect(function(input, processed)
 end)
 
 --==================================================
--- DRAG
+-- CLICK FUNCTION
+--==================================================
+
+local function PerformClick()
+
+    -- Проверяем наличие VirtualInputManager
+    if not VirtualInputManager then
+        return
+    end
+
+    if Config.MouseButton == "Left" then
+
+        VirtualInputManager:SendMouseButtonEvent(
+            0,
+            0,
+            0,
+            true,
+            game,
+            0
+        )
+
+        VirtualInputManager:SendMouseButtonEvent(
+            0,
+            0,
+            0,
+            false,
+            game,
+            0
+        )
+
+    elseif Config.MouseButton == "Right" then
+
+        VirtualInputManager:SendMouseButtonEvent(
+            0,
+            0,
+            1,
+            true,
+            game,
+            0
+        )
+
+        VirtualInputManager:SendMouseButtonEvent(
+            0,
+            0,
+            1,
+            false,
+            game,
+            0
+        )
+
+    end
+
+end
+
+--==================================================
+-- BUTTON ANIMATION
+--==================================================
+
+local function UpdateStartButton()
+
+    if Config.Running then
+
+        StartButton.Text = "STOP"
+
+        TweenService:Create(
+            StartButton,
+            TweenInfo.new(
+                0.18,
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.Out
+            ),
+            {
+                BackgroundColor3 =
+                    Color3.fromRGB(82, 48, 165)
+            }
+        ):Play()
+
+        StatusValue.Text = "Running"
+
+        StatusDot.BackgroundColor3 =
+            Colors.Green
+
+        StartIndicator.BackgroundColor3 =
+            Colors.Green
+
+    else
+
+        StartButton.Text = "START"
+
+        TweenService:Create(
+            StartButton,
+            TweenInfo.new(
+                0.18,
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.Out
+            ),
+            {
+                BackgroundColor3 =
+                    Colors.Purple
+            }
+        ):Play()
+
+        StatusValue.Text = "Stopped"
+
+        StatusDot.BackgroundColor3 =
+            Colors.Green
+
+        StartIndicator.BackgroundColor3 =
+            Color3.fromRGB(255,255,255)
+
+    end
+
+end
+
+--==================================================
+-- START
+--==================================================
+
+function StartClicker()
+
+    if Config.Running then
+        return
+    end
+
+    Config.Running = true
+
+    UpdateStartButton()
+
+    task.spawn(function()
+
+        while Config.Running do
+
+            PerformClick()
+
+            local CurrentCPS =
+                math.clamp(
+                    tonumber(Config.CPS) or 1,
+                    1,
+                    1000
+                )
+
+            task.wait(
+                1 / CurrentCPS
+            )
+
+        end
+
+    end)
+
+end
+
+--==================================================
+-- STOP
+--==================================================
+
+function StopClicker()
+
+    if not Config.Running then
+        UpdateStartButton()
+        return
+    end
+
+    Config.Running = false
+
+    UpdateStartButton()
+
+end
+
+--==================================================
+-- START BUTTON
+--==================================================
+
+StartButton.MouseButton1Click:Connect(function()
+
+    if Config.Running then
+        StopClicker()
+    else
+        StartClicker()
+    end
+
+end)
+
+--==================================================
+-- BUTTON PRESS ANIMATION
+--==================================================
+
+local function PressAnimation(Button)
+
+    local OriginalSize = Button.Size
+
+    Button.MouseButton1Down:Connect(function()
+
+        TweenService:Create(
+            Button,
+            TweenInfo.new(
+                0.08,
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.Out
+            ),
+            {
+                Size = UDim2.new(
+                    OriginalSize.X.Scale,
+                    OriginalSize.X.Offset - 2,
+                    OriginalSize.Y.Scale,
+                    OriginalSize.Y.Offset - 2
+                )
+            }
+        ):Play()
+
+    end)
+
+    Button.MouseButton1Up:Connect(function()
+
+        TweenService:Create(
+            Button,
+            TweenInfo.new(
+                0.08,
+                Enum.EasingStyle.Back,
+                Enum.EasingDirection.Out
+            ),
+            {
+                Size = OriginalSize
+            }
+        ):Play()
+
+    end)
+
+end
+
+PressAnimation(StartButton)
+PressAnimation(LeftButton)
+PressAnimation(RightButton)
+PressAnimation(HotkeyButton)
+PressAnimation(TelegramButton)
+
+print("Lunar Clicker v1.2 - Part 3 loaded")
+
+--==================================================
+-- LUNAR CLICKER v1.2
+-- PART 4/4
+-- Animations / Drag / Minimize / Close
+--==================================================
+
+--==================================================
+-- TELEGRAM
+--==================================================
+
+TelegramButton.MouseButton1Click:Connect(function()
+
+    local Link = "https://t.me/lunarhub_script"
+
+    if setclipboard then
+        pcall(function()
+            setclipboard(Link)
+        end)
+    end
+
+    local OldText = TelegramButton.Text
+    TelegramButton.Text = "COPIED"
+
+    task.delay(1.2, function()
+        if TelegramButton and TelegramButton.Parent then
+            TelegramButton.Text = OldText
+        end
+    end)
+
+end)
+
+--==================================================
+-- DRAG SYSTEM
 --==================================================
 
 local Dragging = false
 local DragStart
 local StartPosition
 
-Top.InputBegan:Connect(function(input)
+TopBar.InputBegan:Connect(function(input)
 
-    if input.UserInputType ==
-        Enum.UserInputType.MouseButton1 then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
 
         Dragging = true
         DragStart = input.Position
@@ -625,13 +1036,10 @@ Top.InputBegan:Connect(function(input)
 
 end)
 
-Top.InputEnded:Connect(function(input)
+TopBar.InputEnded:Connect(function(input)
 
-    if input.UserInputType ==
-        Enum.UserInputType.MouseButton1 then
-
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
         Dragging = false
-
     end
 
 end)
@@ -642,17 +1050,15 @@ UserInputService.InputChanged:Connect(function(input)
         return
     end
 
-    if input.UserInputType ==
-        Enum.UserInputType.MouseMovement then
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
 
-        local delta =
-            input.Position - DragStart
+        local Delta = input.Position - DragStart
 
         Main.Position = UDim2.new(
             StartPosition.X.Scale,
-            StartPosition.X.Offset + delta.X,
+            StartPosition.X.Offset + Delta.X,
             StartPosition.Y.Scale,
-            StartPosition.Y.Offset + delta.Y
+            StartPosition.Y.Offset + Delta.Y
         )
 
     end
@@ -664,29 +1070,67 @@ end)
 --==================================================
 
 local Mini = Instance.new("TextButton")
-Mini.Name = "Mini"
+
+Mini.Name = "LunarMini"
 Mini.AnchorPoint = Vector2.new(0.5, 0.5)
+Mini.Size = UDim2.fromOffset(54, 54)
 Mini.Position = Main.Position
-Mini.Size = UDim2.fromOffset(0, 0)
-Mini.BackgroundColor3 = PANEL
+
+Mini.BackgroundColor3 = Colors.Surface
 Mini.BorderSizePixel = 0
-Mini.Text = "☾"
-Mini.TextColor3 = PURPLE_LIGHT
-Mini.TextSize = 25
-Mini.Font = Enum.Font.GothamBold
+Mini.Text = ""
+Mini.AutoButtonColor = false
 Mini.Visible = false
+
 Mini.Parent = Gui
 
-Corner(Mini, 50)
+local MiniCorner = Instance.new("UICorner")
+MiniCorner.CornerRadius = UDim.new(1, 0)
+MiniCorner.Parent = Mini
 
 local MiniStroke = Instance.new("UIStroke")
-MiniStroke.Color = Color3.fromRGB(105, 55, 225)
+MiniStroke.Color = Colors.Purple
 MiniStroke.Thickness = 1.5
+MiniStroke.Transparency = 0.15
 MiniStroke.Parent = Mini
+
+--==================================================
+-- MINI MOON
+--==================================================
+
+local MiniMoon = Instance.new("Frame")
+
+MiniMoon.Size = UDim2.fromOffset(27, 27)
+MiniMoon.Position = UDim2.fromOffset(13, 13)
+
+MiniMoon.BackgroundColor3 = Colors.PurpleLight
+MiniMoon.BorderSizePixel = 0
+
+MiniMoon.Parent = Mini
+
+local MiniMoonCorner = Instance.new("UICorner")
+MiniMoonCorner.CornerRadius = UDim.new(1, 0)
+MiniMoonCorner.Parent = MiniMoon
+
+local MiniCut = Instance.new("Frame")
+
+MiniCut.Size = UDim2.fromOffset(22, 22)
+MiniCut.Position = UDim2.fromOffset(11, -4)
+
+MiniCut.BackgroundColor3 = Colors.Surface
+MiniCut.BorderSizePixel = 0
+
+MiniCut.Parent = MiniMoon
+
+local MiniCutCorner = Instance.new("UICorner")
+MiniCutCorner.CornerRadius = UDim.new(1, 0)
+MiniCutCorner.Parent = MiniCut
 
 --==================================================
 -- MINIMIZE
 --==================================================
+
+local Minimized = false
 
 Minimize.MouseButton1Click:Connect(function()
 
@@ -696,14 +1140,11 @@ Minimize.MouseButton1Click:Connect(function()
 
     Minimized = true
 
-    local oldPosition = Main.Position
-
-    Mini.Position = oldPosition
+    Mini.Position = Main.Position
     Mini.Visible = true
+    Mini.Size = UDim2.fromOffset(0, 0)
 
     Main.Visible = false
-
-    Mini.Size = UDim2.fromOffset(0, 0)
 
     TweenService:Create(
         Mini,
@@ -713,20 +1154,55 @@ Minimize.MouseButton1Click:Connect(function()
             Enum.EasingDirection.Out
         ),
         {
+            Size = UDim2.fromOffset(54, 54)
+        }
+    ):Play()
+
+end)
+
+--==================================================
+-- RESTORE
+--==================================================
+
+Mini.MouseButton1Click:Connect(function()
+
+    if not Minimized then
+        return
+    end
+
+    Minimized = false
+
+    Main.Position = Mini.Position
+    Mini.Visible = false
+    Main.Visible = true
+
+end)
+
+--==================================================
+-- MINI HOVER
+--==================================================
+
+Mini.MouseEnter:Connect(function()
+
+    TweenService:Create(
+        Mini,
+        TweenInfo.new(0.15),
+        {
             Size = UDim2.fromOffset(58, 58)
         }
     ):Play()
 
 end)
 
-Mini.MouseButton1Click:Connect(function()
+Mini.MouseLeave:Connect(function()
 
-    Minimized = false
-
-    Main.Position = Mini.Position
-
-    Mini.Visible = false
-    Main.Visible = true
+    TweenService:Create(
+        Mini,
+        TweenInfo.new(0.15),
+        {
+            Size = UDim2.fromOffset(54, 54)
+        }
+    ):Play()
 
 end)
 
@@ -734,31 +1210,102 @@ end)
 -- CLOSE
 --==================================================
 
+local Closed = false
+
 Close.MouseButton1Click:Connect(function()
 
-    Destroyed = true
-    StopClicker()
+    if Closed then
+        return
+    end
 
-    Gui:Destroy()
+    Closed = true
+    Config.Running = false
+
+    local Animation = TweenService:Create(
+        Main,
+        TweenInfo.new(
+            0.22,
+            Enum.EasingStyle.Quad,
+            Enum.EasingDirection.In
+        ),
+        {
+            Size = UDim2.fromOffset(0, 0)
+        }
+    )
+
+    Animation:Play()
+
+    Animation.Completed:Connect(function()
+
+        if Gui then
+            Gui:Destroy()
+        end
+
+    end)
 
 end)
 
 --==================================================
+-- WINDOW BUTTON HOVER
+--==================================================
+
+local function WindowHover(Button)
+
+    Button.MouseEnter:Connect(function()
+
+        TweenService:Create(
+            Button,
+            TweenInfo.new(0.12),
+            {
+                BackgroundTransparency = 0.8
+            }
+        ):Play()
+
+    end)
+
+    Button.MouseLeave:Connect(function()
+
+        TweenService:Create(
+            Button,
+            TweenInfo.new(0.12),
+            {
+                BackgroundTransparency = 1
+            }
+        ):Play()
+
+    end)
+
+end
+
+WindowHover(Minimize)
+WindowHover(Close)
+
+--==================================================
 -- OPEN ANIMATION
 --==================================================
+
+local OriginalSize = Main.Size
 
 Main.Size = UDim2.fromOffset(0, 0)
 
 TweenService:Create(
     Main,
     TweenInfo.new(
-        0.35,
+        0.4,
         Enum.EasingStyle.Back,
         Enum.EasingDirection.Out
     ),
     {
-        Size = OPEN_SIZE
+        Size = OriginalSize
     }
 ):Play()
 
-print("Lunar Clicker v1.1 loaded")
+--==================================================
+-- FINAL
+--==================================================
+
+print("================================")
+print(" Lunar Clicker v1.2 loaded")
+print(" Compact UI")
+print(" No emoji icons")
+print("================================")
